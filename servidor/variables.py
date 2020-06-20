@@ -1,5 +1,0 @@
-FTR = b'\x03'
-ALIVE=b'\x04'
-ACK = b'\x05'
-OK = b'\x06'
-NO = b'\x07'
