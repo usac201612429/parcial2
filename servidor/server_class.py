@@ -25,6 +25,7 @@ logging.basicConfig(
 class servidor(object):
     def __init__(self):
         self.lista_activos = []
+        self.lista_clientes_enviados = []
         self.lista_hilos = []
         self._iniciar_mqtt()
         self.hilo_holamundo = threading.Thread(name="hilo del hola mundo",target=self._hello,daemon=False)#aipg hilo adicional solo para correrlo, imprime un hola mundo
@@ -82,10 +83,10 @@ class servidor(object):
                 file_archivo.close()
                 lista_salas_o_usuarios=archivo.split('\n')
                 lista_salas_o_usuarios.pop()
-                logging.info(lista_salas_o_usuarios)
+                #logging.info(lista_salas_o_usuarios)
                 for i in lista_salas_o_usuarios:
                     self.susc_topic(i)
-                time.sleep(2)
+                time.sleep(6)
         except Exception as identifier:
             logging.error(identifier)
     
@@ -103,14 +104,22 @@ class servidor(object):
         #print(trama[:1])
         #if trama[:1]==binascii.unhexlify('03'):#si es una trama alive
         if trama[:2]== b'03':
+            
+
             print("exito")
             trama_id=trama[3:]
             trama_id=trama_id.decode('ascii')#user id queda como string
-            print(trama_id,type(trama_id))
+            #print(trama_id,type(trama_id))
+
             if trama_id not in self.lista_activos:
                 self.lista_activos.append(trama_id)
-            print(self.lista_activos)
-            for i in range(len(self.lista_activos)):#aipg este for es para hacer hilos conforme lleguen las tramas de ALIVE
+            print(self.lista_activos)#aipg tengo la lista con los clientes activos
+
+            #aipg lo agrega independientemente de si es activo o no, media vez mande el alive
+            self.lista_clientes_enviados.append(trama_id)#aipg va a estar recibiendo todos los ALIVE de los clientes.
+
+
+            '''for i in range(len(self.lista_activos)):#aipg este for es para hacer hilos conforme lleguen las tramas de ALIVE
                 self.lista_hilos.append(
                                     threading.Thread(name = 'hilo de topic entrante' + str(i),
                                     target = self._usuario_activo,
@@ -119,7 +128,10 @@ class servidor(object):
                                     )
                         )
             for j in self.lista_hilos:
-                j.start()
+                j.start()'''
+
+            self.hilo_prueba = threading.Thread(name="hilo prueba",target=self._usuario_activo,args=((trama_id),),daemon=False)#aipg hilo para monitorizar los clientes activos
+            self.hilo_prueba.start()
                 
             
 
@@ -128,9 +140,16 @@ class servidor(object):
         while cnt < 3:
             cnt+=1
             time.sleep(2)
+            #logging.info("se ha cumplido un ciclo del hilo 1")
 
-        if cnt==3:
-            self.lista_activos.remove("user_id")
+        #if cnt==3:
+            #self.lista_activos.remove(user_id)
+        logging.info("SE TERMINARON LOS 3 PERIODOS")
+        self.lista_clientes_enviados.remove(user_id)
+        if user_id not in self.lista_clientes_enviados:
+            self.lista_activos.remove(user_id)#aipg borra el user id que no ha seguido enviando paquetes de ALIVE
+
+        logging.info(self.lista_activos)#muestra los usuarios activos si se saca alguno
 
 
     def on_connect(self,mqttcliente,userdata,flags,rc):#aipg metodo que desplega si se ha conectado con exito
