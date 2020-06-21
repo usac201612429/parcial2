@@ -7,6 +7,7 @@ import socket
 import logging
 import time
 import binascii
+from variables import *
 #from credenciales import *
 
 #Parametros de conexion
@@ -35,6 +36,9 @@ class servidor(object):
         self.hilo_leer_archivo_usuarios = threading.Thread(name='hilo de leer archivos usuarios',target=self._leer_archivo,args=(('usuarios'),),daemon=False)#aipg hilo para leer el archivo de salas
         self.hilo_leer_archivo_usuarios.start()
 
+        self.userIDmsg = ""        #OAGM usuario que envia comandos
+        self.ultimoComando = "" #OAGM ultimo comando recivido
+
         #args = (range(100), ),
     def _hello(self):
         while True:
@@ -53,7 +57,7 @@ class servidor(object):
         #aipg configuraciones de mqtt
         self._conf_mqtt()
 
-        self.susc_topic('comandos/01')
+        self.susc_topic(ROOTTOPIC)
 
     def _conf_mqtt(self):
         self.mqttcliente = mqtt.Client(clean_session=True)#aipg se crea el objeto de mqtt
@@ -109,6 +113,8 @@ class servidor(object):
             print("exito")
             trama_id=trama[3:]
             trama_id=trama_id.decode('ascii')#user id queda como string
+            self.userIDmsg = trama_id #OAGM haciendo atributo el ID del ultimo comando recivido
+            self.ultimoComando = trama[:2] #OAGM haciendo atributo el ultimo comando recivido
             #print(trama_id,type(trama_id))
 
             if trama_id not in self.lista_activos:

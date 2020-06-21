@@ -9,8 +9,10 @@ import time
 import binascii
 import sys
 from server_class import *
+from ServerComands import *
 
 servidor1 = servidor()
+comandos = ServerCommands(servidor1)
 
 try:
     while True:
