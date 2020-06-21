@@ -37,7 +37,7 @@ class servidor(object):
         self.hilo_leer_archivo_usuarios.start()
 
         self.userIDmsg = ""        #OAGM usuario que envia comandos
-        self.ultimoComando = "" #OAGM ultimo comando recivido
+        self.ultimoComando = "" #OAGM ultimo comando recibido
 
         #args = (range(100), ),
     def _hello(self):
@@ -113,8 +113,8 @@ class servidor(object):
             print("exito")
             trama_id=trama[3:]
             trama_id=trama_id.decode('ascii')#user id queda como string
-            self.userIDmsg = trama_id #OAGM haciendo atributo el ID del ultimo comando recivido
-            self.ultimoComando = trama[:2] #OAGM haciendo atributo el ultimo comando recivido
+            self.userIDmsg = trama_id #OAGM haciendo atributo el ID del ultimo comando recibido
+            self.ultimoComando = trama[:2] #OAGM haciendo atributo el ultimo comando recibido
             #print(trama_id,type(trama_id))
 
             if trama_id not in self.lista_activos:
