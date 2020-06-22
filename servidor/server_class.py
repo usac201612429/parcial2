@@ -37,7 +37,7 @@ class servidor(object):
         self.hilo_leer_archivo_usuarios.start()
 
         self.userIDmsg = ""        #OAGM usuario que envia comandos
-        self.ultimoComando = "" #OAGM ultimo comando recivido
+        self.ultimoComando = "" #OAGM ultimo comando recibido
 
         #args = (range(100), ),
     def _hello(self):
