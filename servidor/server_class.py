@@ -31,9 +31,9 @@ class servidor(object):
         self._iniciar_mqtt()
         self.hilo_holamundo = threading.Thread(name="hilo del hola mundo",target=self._hello,daemon=False)#aipg hilo adicional solo para correrlo, imprime un hola mundo
         self.hilo_holamundo.start()
-        self.hilo_leer_archivo_salas = threading.Thread(name='hilo de leer archivos salas',target=self._leer_archivo,args=(('salas'),),daemon=False)#aipg hilo para leer el archivo de salas
+        self.hilo_leer_archivo_salas = threading.Thread(name='hilo de leer archivos salas',target=self._leer_archivo_salas,args=(('salas'),),daemon=False)#aipg hilo para leer el archivo de salas
         self.hilo_leer_archivo_salas.start()
-        self.hilo_leer_archivo_usuarios = threading.Thread(name='hilo de leer archivos usuarios',target=self._leer_archivo,args=(('usuarios'),),daemon=False)#aipg hilo para leer el archivo de salas
+        self.hilo_leer_archivo_usuarios = threading.Thread(name='hilo de leer archivos usuarios',target=self._leer_archivo_usuarios,args=(('usuarios'),),daemon=False)#aipg hilo para leer el archivo de salas
         self.hilo_leer_archivo_usuarios.start()
 
         self.msg = ""        #OAGM mensaje entrante
@@ -46,7 +46,9 @@ class servidor(object):
 
 
     def susc_topic(self,topic):#metodo para suscribirse a un topic
-        self.mqttcliente.subscribe((topic,0))
+        topic_inscribir=ROOTTOPIC + '/' + topic#AIPG comandos/14/topic deseado
+        print(topic_inscribir)
+        self.mqttcliente.subscribe((topic_inscribir,0))
         self.mqtthilo = threading.Thread(name= 'MQTT suscripcion',target=self.mqttcliente.loop_start)#aipg hilo para recibir notificaciones del tipic
         self.mqtthilo.start()#aipg el hilo es para que si me suscribo a algo, lo revise siempre
 
@@ -56,7 +58,7 @@ class servidor(object):
         #aipg configuraciones de mqtt
         self._conf_mqtt()
 
-        self.susc_topic(ROOTTOPIC)
+        self.mqttcliente.subscribe((ROOTTOPIC,0))
 
     def _conf_mqtt(self):
         self.mqttcliente = mqtt.Client(clean_session=True)#aipg se crea el objeto de mqtt
@@ -77,7 +79,7 @@ class servidor(object):
         #topic = 'comandos/14'
         self.mqttcliente.publish(topic, value, qos, retain)
 
-    def _leer_archivo(self,file):#aipg metodo que lee el archivo de salas para suscribirse
+    def _leer_archivo_salas(self,file):#aipg metodo que lee el archivo de salas para suscribirse
         lista_salas_o_usuarios=[]
         try:
             while True:
@@ -93,6 +95,28 @@ class servidor(object):
         except Exception as identifier:
             logging.error(identifier)
     
+    def _leer_archivo_usuarios(self,file):
+        lista_usuarios=[]
+        try:
+            while True:
+                file_usuarios=open(file,'r')
+                archivo_usuarios=file_usuarios.readlines()
+                file_usuarios.close()
+                #print(archivo_usuarios,type(archivo_usuarios))
+
+                for i in archivo_usuarios:
+                    lista_usuarios.append(i[0:9])
+                #print(lista_usuarios)
+                for j in lista_usuarios:#AIPG se subscriben a todos los topic de comandos/14/usuarios
+                    self.susc_topic(j)
+
+                time.sleep(6)
+
+        except Exception as identifier:
+            logging.error(identifier)
+        
+
+
     def _revisar_activo(self):
         pass
 
@@ -106,7 +130,7 @@ class servidor(object):
         trama=msg.payload#aipg trama en binario
         print("trama recibida",trama)
         #print(trama[:1])
-        #if trama[:1]==binascii.unhexlify('03'):#si es una trama alive
+        #if trama[:1]==binascii.unhexlify('04'):#si es una trama alive
         if trama[:2]== b'03':
             
 
