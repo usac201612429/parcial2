@@ -130,7 +130,7 @@ class servidor(object):
         trama=msg.payload#aipg trama en binario
         print("trama recibida",trama)
         #print(trama[:1])
-        #if trama[:1]==binascii.unhexlify('03'):#si es una trama alive
+        #if trama[:1]==binascii.unhexlify('04'):#si es una trama alive
         if trama[:2]== b'03':
             
 
