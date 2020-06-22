@@ -1,5 +1,6 @@
 from variables import *
 import time
+import binascii
 import threading 
 
 class ServerCommands:
@@ -9,10 +10,10 @@ class ServerCommands:
         self.hiloFindCommands.start()
 
     def ack(self, toTopic):
-            print(toTopic)
-            value = ACK + b"$" + toTopic.encode('UTF-8', 'strict')
+            value = ACK + b'$' + toTopic
+            print(value)
             # self.servidor.client.publish(f"{ROOTTOPIC}", value, qos = 2, retain = False)
-            self.servidor.client.publish(f"{ROOTTOPIC}/{str(toTopic)}", value, qos = 2, retain = False)
+            self.servidor.mqttcliente.publish(f"{ROOTTOPIC}/{toTopic.decode('UTF-8', 'strict')}", value, qos = 0, retain = False)
     
  
     # def frr(self, toTopic):
@@ -20,7 +21,9 @@ class ServerCommands:
 
     def findCommand(self):
         while True:
-
-            if self.servidor.msg.payload[:2] == ALIVE:
-                self.ack(self.servidor.msg.payload[3:11]) 
-                self.servidor.ultimoComando = 0
+            #print(f'comando recibido: {self.servidor.msg[:1]}')
+            if self.servidor.msg[:1] == ALIVE:
+                print(self.servidor.msg[2:12])
+                self.ack(self.servidor.msg[2:12]) 
+                self.servidor.msg = b"00"
+            time.sleep(0.1)

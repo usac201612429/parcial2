@@ -36,7 +36,7 @@ class servidor(object):
         self.hilo_leer_archivo_usuarios = threading.Thread(name='hilo de leer archivos usuarios',target=self._leer_archivo_usuarios,args=(('usuarios'),),daemon=False)#aipg hilo para leer el archivo de salas
         self.hilo_leer_archivo_usuarios.start()
 
-        self.msg = ""        #OAGM mensaje entrante
+        self.msg = b"00"        #OAGM mensaje entrante
 
         #args = (range(100), ),
     def _hello(self):
@@ -47,7 +47,7 @@ class servidor(object):
 
     def susc_topic(self,topic):#metodo para suscribirse a un topic
         topic_inscribir=ROOTTOPIC + '/' + topic#AIPG comandos/14/topic deseado
-        print(topic_inscribir)
+        #print(topic_inscribir)
         self.mqttcliente.subscribe((topic_inscribir,0))
         self.mqtthilo = threading.Thread(name= 'MQTT suscripcion',target=self.mqttcliente.loop_start)#aipg hilo para recibir notificaciones del tipic
         self.mqtthilo.start()#aipg el hilo es para que si me suscribo a algo, lo revise siempre
@@ -123,17 +123,16 @@ class servidor(object):
     
     #aipg metodos callback de mqtt
     def on_message(self,mqttcliente,userdata,msg):#aipg metodo cuando entra un mensaje a un topic suscrito
-        self.msg = msg #OAGM haciendo atributo el ID del ultimo comando recibido
         logging.info("Ha llegado un mensaje de este topic: " + str(msg.topic))
         logging.info("Su contenido es: " + str(msg.payload))
 
         trama=msg.payload#aipg trama en binario
+        self.msg = trama #OAGM haciendo atributo el ID del ultimo comando recibido
         print("trama recibida",trama)
         #print(trama[:1])
         #if trama[:1]==binascii.unhexlify('04'):#si es una trama alive
         if trama[:2]== b'03':
-            
-
+        
             print("exito")
             trama_id=trama[3:]
             trama_id=trama_id.decode('ascii')#user id queda como string
