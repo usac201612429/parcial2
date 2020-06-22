@@ -16,7 +16,7 @@ comandos = ServerCommands(servidor1)
 
 try:
     while True:
-        print("Hola mundo 2")
+        #print("Hola mundo 2")
         time.sleep(9)
         #servidor1.publicar("01S01",'hola sala 01')
         

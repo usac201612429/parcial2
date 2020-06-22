@@ -36,8 +36,7 @@ class servidor(object):
         self.hilo_leer_archivo_usuarios = threading.Thread(name='hilo de leer archivos usuarios',target=self._leer_archivo,args=(('usuarios'),),daemon=False)#aipg hilo para leer el archivo de salas
         self.hilo_leer_archivo_usuarios.start()
 
-        self.userIDmsg = ""        #OAGM usuario que envia comandos
-        self.ultimoComando = "" #OAGM ultimo comando recibido
+        self.msg = ""        #OAGM mensaje entrante
 
         #args = (range(100), ),
     def _hello(self):
@@ -100,6 +99,7 @@ class servidor(object):
     
     #aipg metodos callback de mqtt
     def on_message(self,mqttcliente,userdata,msg):#aipg metodo cuando entra un mensaje a un topic suscrito
+        self.msg = msg #OAGM haciendo atributo el ID del ultimo comando recibido
         logging.info("Ha llegado un mensaje de este topic: " + str(msg.topic))
         logging.info("Su contenido es: " + str(msg.payload))
 
@@ -113,8 +113,6 @@ class servidor(object):
             print("exito")
             trama_id=trama[3:]
             trama_id=trama_id.decode('ascii')#user id queda como string
-            self.userIDmsg = trama_id #OAGM haciendo atributo el ID del ultimo comando recibido
-            self.ultimoComando = trama[:2] #OAGM haciendo atributo el ultimo comando recibido
             #print(trama_id,type(trama_id))
 
             if trama_id not in self.lista_activos:
