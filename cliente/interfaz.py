@@ -1,4 +1,4 @@
-from variables import * #FPRTH Importando las constantes del archivo que las contiene
+from constantes import * #FPRTH Importando las constantes del archivo que las contiene
 from CLASScliente import * #Importando el programa que maneja la clase de clientes
 
 
@@ -59,7 +59,7 @@ def menu_texto():
     os.system('clear')
     logging.info('Menu para enviar mensaje de texto\n')
     while True:
-        destino = input('\tA donde desea enviar el texto?\n\t0. Regresar al menu anterior\n\t1. Enviar a un usuario\n\t2. Enviar a una sala\n\t\t')
+        destino = input('\tA donde desea enviar el texto?\n\t1. Enviar a un usuario\n\t2. Enviar a una sala\n\t0. Regresar al menu anterior\n\t\t')
         if destino=='0':
             menu_principal()
             break
@@ -78,7 +78,7 @@ def menu_voz():
     os.system('clear')
     logging.info('Menu para enviar mensaje de voz\n')
     while True:
-        destino = input('\tA donde desea enviar el audio?\n\t0. Regresar al menu anterior\n\t1. Enviar a un usuario\n\t2. Enviar a una sala\n\t\t')
+        destino = input('\tA donde desea enviar el audio?\n\t1. Enviar a un usuario\n\t2. Enviar a una sala\n\t0. Regresar al menu anterior\n\t\t')
         if destino=='0':
             menu_principal()
             break
@@ -99,6 +99,9 @@ def menu_salir():
     while True:
         salida = input('\tEsta seguro que desea salir de la mensajeria? [Y]/n\n\t\t')
         if salida == '' or salida == ' ' or salida == 'Y' or salida =='y':
+            cliente_paho.loop_stop()
+            cliente_paho.disconnect()
+            
             sys.exit()
         elif salida == 'n' or salida =='N':
             menu_principal()

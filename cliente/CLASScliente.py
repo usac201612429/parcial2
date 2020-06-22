@@ -1,9 +1,42 @@
+from constantes import *
+
 import os
+import paho.mqtt.client as paho
+import logging
+import time
+
+FORMATO = '[%(levelname)s] %(message)s'
+logging.basicConfig(level = logging.DEBUG, format=FORMATO)
+
+
+def on_publish(client,userdata,mid):
+    info='Mensaje enviado'
+    logging.info(info)
+
+def on_message(client,userdata,msg):
+    print('jaja')
+    logging.info("Ha llegado un mensaje del topic "+str(msg.topic))
+    logging.info(str(msg.payload))
+
+
+cliente_paho = paho.Client(clean_session=True)
+cliente_paho.on_publish = on_publish
+cliente_paho.on_message = on_message
+cliente_paho.username_pw_set(MQTT_USER,MQTT_PASS)
+cliente_paho.connect(host=MQTT_HOST,port=MQTT_PORT)
+
+
 
 #FPRTH Se crea la clase que manejara al cliente
 class clients (object):
     def __init__(self):
-        pass
+        usuario = self.GetID()
+        self.subscripciones = [(MQTT_COMANDOS+MQTT_GRUPO+usuario,MQTT_QOS),(MQTT_USUARIOS+MQTT_GRUPO+usuario,MQTT_QOS)]
+        self.SubSalas()
+        cliente_paho.subscribe(self.subscripciones)
+        logging.debug(str(self.subscripciones))
+        time.sleep(20)
+        cliente_paho.loop_start()
 
     def SetDestino(self,dest):
         self.destino=dest
@@ -16,7 +49,7 @@ class clients (object):
         return self.destino
 
     def EnviarTexto(self,msg):
-        self.mensaje = msg
+        cliente_paho.publish(self.destino,msg,qos=0,retain=False)
         
 
     def GetID(self):
@@ -24,9 +57,9 @@ class clients (object):
         texto_usuario =''
         for line in arch_usuario:
             texto_usuario += line      
-        return texto_usuario
+        return texto_usuario[:-1]
 
-    def GetSalas(self):
+    def DetSalas(self):
         self.lista_salas=[]
         texto_salas = ''
 
@@ -38,7 +71,12 @@ class clients (object):
         lista = texto_salas[:-1].split('\n')
         for i in lista:
             self.lista_salas.append(i[2:])
+        
+    def GetSalas(self):
+        self.DetSalas()
         return self.lista_salas
 
-    def GetSalasMensaje():
-        mensaje = 'Usted se encuentra en las siguientes salas: '
+    def SubSalas(self):
+        self.DetSalas()
+        for i in self.lista_salas:
+            self.subscripciones.append((MQTT_SALAS+MQTT_GRUPO+i,MQTT_QOS))
