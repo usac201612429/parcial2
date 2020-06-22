@@ -21,4 +21,6 @@ try:
         #servidor1.publicar("01S01",'hola sala 01')
         
 except KeyboardInterrupt:
+    if comandos.hiloFindCommands.isAlive():
+        comandos.hiloFindCommands._stop()
     sys.exit()
