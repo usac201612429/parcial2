@@ -31,10 +31,9 @@ class servidor(object):
         self._iniciar_mqtt()
         self.hilo_holamundo = threading.Thread(name="hilo del hola mundo",target=self._hello,daemon=False)#aipg hilo adicional solo para correrlo, imprime un hola mundo
         self.hilo_holamundo.start()
-        self.hilo_leer_archivo_salas = threading.Thread(name='hilo de leer archivos salas',target=self._leer_archivo_salas,args=(('salas'),),daemon=False)#aipg hilo para leer el archivo de salas
-        self.hilo_leer_archivo_salas.start()
         self.hilo_leer_archivo_usuarios = threading.Thread(name='hilo de leer archivos usuarios',target=self._leer_archivo_usuarios,args=(('usuarios'),),daemon=False)#aipg hilo para leer el archivo de salas
         self.hilo_leer_archivo_usuarios.start()
+        self._diccionario_salas_usuarios('usuarios')
 
         self.msg = ""        #OAGM mensaje entrante
 
@@ -79,22 +78,37 @@ class servidor(object):
         #topic = 'comandos/14'
         self.mqttcliente.publish(topic, value, qos, retain)
 
-    def _leer_archivo_salas(self,file):#aipg metodo que lee el archivo de salas para suscribirse
-        lista_salas_o_usuarios=[]
-        try:
-            while True:
-                file_archivo=open(file,'r')
-                archivo=file_archivo.read()
-                file_archivo.close()
-                lista_salas_o_usuarios=archivo.split('\n')
-                lista_salas_o_usuarios.pop()
-                #logging.info(lista_salas_o_usuarios)
-                for i in lista_salas_o_usuarios:
-                    self.susc_topic(i)
-                time.sleep(6)
-        except Exception as identifier:
-            logging.error(identifier)
-    
+    def _diccionario_salas_usuarios(self,file):#AIPG metodo que hace el diccionario de usuario y sus salas
+        self.usuarios_dict={}#AIPG diccionario de usuarios
+        lista2=[]
+        file_salas_usuarios=open(file,'r')
+        archivo_salas_usuarios=file_salas_usuarios.read()
+        #print(archivo_salas_usuarios)
+        lista1=archivo_salas_usuarios.split('\n')
+        lista1.pop()
+        #print(lista1)
+        for i in lista1:
+            lista2.append(i.split(','))#AIPG tengo una lista con sublistas de cada linea con usuario, nombre y salas a las que pertenece
+        #print(lista2)
+
+        for i in range(len(lista2)):
+            self.usuarios_dict[lista2[i][0]]=lista2[i][2:]
+        #print(usuarios_dict)
+
+    def _consulta(self,user_id,sala):#AIPG metodo para consultar si un usuario tiene alguna sala configurada
+        if user_id in self.usuarios_dict.keys():#AIPG verificar que el usuario este en la lista de configuracion
+            usuario_sala = self.usuarios_dict[user_id]#AIPG si el usuario esta en el diccionario, entonces nos devolvera su valor para iterarlo
+            for i in usuario_sala:
+                if i==sala:
+                    si_esta=True
+                    break
+                else:
+                    si_esta=False
+        else:
+            si_esta=False#AIPG significa que ya sea el usuario o la sala no esta en el diccionario de las configuraciones
+        print(si_esta)
+        return si_esta
+
     def _leer_archivo_usuarios(self,file):
         lista_usuarios=[]
         try:
@@ -146,18 +160,6 @@ class servidor(object):
             #aipg lo agrega independientemente de si es activo o no, media vez mande el alive
             self.lista_clientes_enviados.append(trama_id)#aipg va a estar recibiendo todos los ALIVE de los clientes.
 
-
-            '''for i in range(len(self.lista_activos)):#aipg este for es para hacer hilos conforme lleguen las tramas de ALIVE
-                self.lista_hilos.append(
-                                    threading.Thread(name = 'hilo de topic entrante' + str(i),
-                                    target = self._usuario_activo,
-                                    args = ((trama_id),),
-                                    daemon = False
-                                    )
-                        )
-            for j in self.lista_hilos:
-                j.start()'''
-
             self.hilo_prueba = threading.Thread(name="hilo prueba",target=self._usuario_activo,args=((trama_id),),daemon=False)#aipg hilo para monitorizar los clientes activos
             self.hilo_prueba.start()
                 
@@ -169,7 +171,6 @@ class servidor(object):
             cnt+=1
             time.sleep(2)
             #logging.info("se ha cumplido un ciclo del hilo 1")
-
         #if cnt==3:
             #self.lista_activos.remove(user_id)
         logging.info("SE TERMINARON LOS 3 PERIODOS")
