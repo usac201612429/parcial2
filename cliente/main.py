@@ -15,11 +15,10 @@ def on_connect(client,userdata,mid):
     time.sleep(2)
     menu_inicio()
 
-#FPRTH Configuraciones
-cliente_paho = paho.Client(clean_session=True)
-cliente_paho.on_connect = on_connect
-cliente_paho.on_publish = on_publish
-cliente_paho.username_pw_set(MQTT_USER,MQTT_PASS)
-cliente_paho.connect(host=MQTT_HOST,port=MQTT_PORT)
 
-menu_inicio()
+os.system('clear')
+logging.info('Bienvenido a la mensajeria instantanea del grupo 1')
+logging.info('Se ha loggeado con el siguiente usuario: ' +cliente.GetUsuario())
+a=input('\nPresione "Enter" para continuar...')
+
+menu_principal()

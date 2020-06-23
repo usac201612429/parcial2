@@ -49,14 +49,10 @@ class ClientCommands:
 
 
     def verificarMensajes(self, payload, topic):
-        """ OAGM: si el comando es ALIVE, se llamará al metodo ack y se le envia quien lo envia.  """ 
-
-        if topic[:12] == f"{MQTT_COMANDOS}{MQTT_GRUPO}":    
-            if payload[:1] == ACK:
-                self._periodosAlivePerdidos = 0
-                self._alivePeriod = ALIVE_PERIOD
-                payload = "00"            
-        elif topic[:12] == f'{MQTT_USUARIOS}{MQTT_GRUPO}':
-            logging.info("Ha llegado un mensaje del topic "+str(topic))
-            logging.info(str(payload))
+        """ OAGM: si el comando es ACK, reinicia el contador de periodos alive sin reslpuesta.  """ 
+  
+        if payload[:1] == ACK:
+            self._periodosAlivePerdidos = 0
+            self._alivePeriod = ALIVE_PERIOD
+            payload = "00"           
 

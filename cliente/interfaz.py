@@ -18,32 +18,13 @@ logging.basicConfig(level = logging.INFO, format=FORMATO)
 
 cliente =clients()
 
-#FPRTH Se crea una funcion que maneja la interfaz para el usuario.
-def menu_inicio():
-    os.system('clear')
-    logging.info('Bienvenido a la mensajeria instantanea del grupo 1\n')
-    while True:  
-        id = input('\tIngrese su ID de usuario (numero de carnet): \n \t\t')
-        if id.isdigit() :
-            if len(id)==9:
-                cliente.SetId(id)
-                break
-            else:
-                os.system('clear')
-                logging.info('Bienvenido a la mensajeria instantanea del grupo 1\n')
-                logging.error('La longitud de su id no corresponde a la longitud de un numero de carnet estandar (9 digitos)\n')
-        else:
-            os.system('clear')
-            logging.info('Bienvenido a la mensajeria instantanea del grupo 1\n')
-            logging.error('Debido a que el id debe ser su numero de carnet solo se permiten numeros como entradas\n')
-    menu_principal()
-    
+#FPRTH Se crea una funcion que maneja la interfaz para el usuario.  
 
 def menu_principal():
     os.system('clear')
     logging.info('Menu principal\n')
     while True:
-        t = input('\tSeleccione una opcion:\n\t1. Enviar texto\n\t2. Enviar mensaje de voz\n\t3. Salir\n\t\t')
+        t = input('Seleccione una opcion:\n1. Enviar texto\n2. Enviar mensaje de voz\n3. Salir\n')
         if t == '1':
             menu_texto()
         elif t=='2':
@@ -60,7 +41,7 @@ def menu_texto():
     os.system('clear')
     logging.info('Menu para enviar mensaje de texto\n')
     while True:
-        destino = input('\tA donde desea enviar el texto?\n\t1. Enviar a un usuario\n\t2. Enviar a una sala\n\t0. Regresar al menu anterior\n\t\t')
+        destino = input('A donde desea enviar el texto?\n1. Enviar a un usuario\n2. Enviar a una sala\n0. Regresar al menu anterior\n')
         if destino=='0':
             menu_principal()
             break
@@ -79,7 +60,7 @@ def menu_voz():
     os.system('clear')
     logging.info('Menu para enviar mensaje de voz\n')
     while True:
-        destino = input('\tA donde desea enviar el audio?\n\t1. Enviar a un usuario\n\t2. Enviar a una sala\n\t0. Regresar al menu anterior\n\t\t')
+        destino = input('A donde desea enviar el audio?\n1. Enviar a un usuario\n2. Enviar a una sala\n0. Regresar al menu anterior\n')
         if destino=='0':
             menu_principal()
             break
@@ -98,11 +79,11 @@ def menu_salir():
     os.system('clear')
     logging.warning('Esta a punto de salir de la mensajeria\n')
     while True:
-        salida = input('\tEsta seguro que desea salir de la mensajeria? [Y]/n\n\t\t')
+        salida = input('Esta seguro que desea salir de la mensajeria? [Y]/n\n')
         if salida == '' or salida == ' ' or salida == 'Y' or salida =='y':
             cliente_paho.loop_stop()
             cliente_paho.disconnect()
-            
+
             sys.exit()
         elif salida == 'n' or salida =='N':
             menu_principal()
@@ -116,7 +97,7 @@ def menu_en_usuario(tipo):
     os.system('clear')
     logging.info('Envio de mensaje de '+tipo+'\n')
     while True:
-        id_dest = input('\tIndique el usuario al que desea enviar el mensaje:\n\t\t')    
+        id_dest = input('Indique el usuario al que desea enviar el mensaje:\n')    
         if id_dest.isdigit() :
             if len(id_dest)==9:
                 cliente.SetDestino('usuarios/01/'+id_dest)
@@ -145,7 +126,7 @@ def menu_en_sala(tipo):
         mensaje += '  '+i
     logging.info(mensaje+'\n')
     while True:
-        destino = input('\t Indique la sala a la que desa enviar el mensaje: \n\t\t')
+        destino = input('Indique la sala a la que desa enviar el mensaje: \n')
         if destino in salas:
             cliente.SetDestino('salas/01/'+destino)
             break
@@ -165,10 +146,10 @@ def menu_en_sala(tipo):
 def envio_texto():
     os.system('clear')
     logging.info('Enviando mensaje de texto hacia '+cliente.GetDestino()+'\n')
-    msg = input('\tEscriba el mensaje que desea enviar: \n \t\t')
+    msg = input('Escriba el mensaje que desea enviar: \n')
     cliente.EnviarTexto(msg)
     while True:
-        salida = input('\tDesea enviar otro mensaje de texto? [Y]/n\n\t\t')
+        salida = input('Desea enviar otro mensaje de texto? [Y]/n\n')
         if salida == '' or salida == ' ' or salida == 'Y' or salida =='y':
             os.system('clear')
             envio_texto()
@@ -183,4 +164,16 @@ def envio_texto():
 
 def envio_audio():
     os.system('clear')
-    logging.info('Enviando mensaje de voz hacia '+cliente.GetDestino()+'\n')
+    logging.info('Enviando mensaje de voz hacia '+cliente.GetDestino()+'\n')    
+    while True:     
+        duracion=input('Ingrese la duracion,en segundos, del audio que desea enviar:\n')
+        if duracion.isdigit():
+            grabacion(duracion)
+            break
+        else:
+            os.system('clear')
+            logging.info('Enviando mensaje de voz hacia '+cliente.GetDestino()+'\n') 
+            logging.error('Solo se aceptan numeros como entrada\n')
+
+def grabacion(duracion):
+    os.system('arecord -d '+duracion+' -f U8 -r 8000 audio.wav')

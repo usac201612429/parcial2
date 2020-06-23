@@ -14,8 +14,17 @@ def on_publish(client,userdata,mid):
     comandos.publicar()
 
 def on_message(client,userdata,msg):
-    comandos.verificarMensajes(msg.payload, msg.topic)
-
+    topic=str(msg.topic)
+    ltopic=topic.split('/')
+    mensaje=msg.payload.decode()
+    usuario = mensaje[:9]
+    mensaje = mensaje[9:]
+    if ltopic[0]=='usuarios':
+        logging.info("[MENSAJE NUEVO DEL USUARIO "+usuario+"]\n\t"+mensaje+'\n')
+    elif ltopic[0]=='salas':
+        logging.info("[MENSAJE NUEVO DEL USUARIO "+usuario+' EN LA SALA '+ltopic[2]+"]\n\t"+mensaje+'\n')
+    elif ltopic[0] == 'comandos':
+        comandos.verificarMensajes(msg.payload, msg.topic)
 
 cliente_paho = paho.Client(clean_session=True)
 cliente_paho.on_publish = on_publish
@@ -28,12 +37,10 @@ cliente_paho.connect(host=MQTT_HOST,port=MQTT_PORT)
 #FPRTH Se crea la clase que manejara al cliente
 class clients (object):
     def __init__(self):
-        usuario = self.GetID()
-        self.subscripciones = [(MQTT_COMANDOS+MQTT_GRUPO+usuario,MQTT_QOS),(MQTT_USUARIOS+MQTT_GRUPO+usuario,MQTT_QOS)]
+        self.usuario = self.DetID()
+        self.subscripciones = [(MQTT_COMANDOS+MQTT_GRUPO+self.usuario,MQTT_QOS),(MQTT_USUARIOS+MQTT_GRUPO+self.usuario,MQTT_QOS)]
         self.SubSalas()
         cliente_paho.subscribe(self.subscripciones)
-        logging.debug(str(self.subscripciones))
-        # time.sleep(20)
         cliente_paho.loop_start()
         self.msg = "00"
 
@@ -48,10 +55,12 @@ class clients (object):
         return self.destino
 
     def EnviarTexto(self,msg):
-        cliente_paho.publish(self.destino,msg,qos=0,retain=False)
+        cliente_paho.publish(self.destino,self.usuario+msg,qos=0,retain=False)
         
+    def GetUsuario(self):
+        return self.usuario
 
-    def GetID(self):
+    def DetID(self):
         arch_usuario=open('usuario','r')
         texto_usuario =''
         for line in arch_usuario:
