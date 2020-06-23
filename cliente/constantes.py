@@ -21,6 +21,6 @@ MQTT_SALAS = 'salas/'
 MQTT_GRUPO = '01/'
 
 #General
-
+ALIVE_PERIOD = 2
 
 

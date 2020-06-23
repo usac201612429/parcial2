@@ -1,5 +1,6 @@
 from constantes import * #FPRTH Importando las constantes del archivo que las contiene
 from CLASScliente import * #Importando el programa que maneja la clase de clientes
+from ClientComands import * #OAGM clse para manejo de comandos del "cliente"
 
 
 

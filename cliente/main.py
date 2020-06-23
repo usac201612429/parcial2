@@ -15,10 +15,6 @@ def on_connect(client,userdata,mid):
     time.sleep(2)
     menu_inicio()
 
-def on_publish(client,userdata,mid):
-    info='Mensaje enviado'
-    logging.debug(info)
-
 #FPRTH Configuraciones
 cliente_paho = paho.Client(clean_session=True)
 cliente_paho.on_connect = on_connect

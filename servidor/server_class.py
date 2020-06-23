@@ -57,7 +57,7 @@ class servidor(object):
         #aipg configuraciones de mqtt
         self._conf_mqtt()
 
-        self.mqttcliente.subscribe((ROOTTOPIC,0))
+        self.mqttcliente.subscribe(ROOTTOPIC,0)
 
     def _conf_mqtt(self):
         self.mqttcliente = mqtt.Client(clean_session=True)#aipg se crea el objeto de mqtt

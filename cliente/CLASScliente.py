@@ -1,4 +1,5 @@
 from constantes import *
+from ClientComands import *
 
 import os
 import paho.mqtt.client as paho
@@ -10,13 +11,10 @@ logging.basicConfig(level = logging.DEBUG, format=FORMATO)
 
 
 def on_publish(client,userdata,mid):
-    info='Mensaje enviado'
-    logging.info(info)
+    comandos.publicar()
 
 def on_message(client,userdata,msg):
-    print('jaja')
-    logging.info("Ha llegado un mensaje del topic "+str(msg.topic))
-    logging.info(str(msg.payload))
+    comandos.verificarMensajes(msg.payload, msg.topic)
 
 
 cliente_paho = paho.Client(clean_session=True)
@@ -35,8 +33,9 @@ class clients (object):
         self.SubSalas()
         cliente_paho.subscribe(self.subscripciones)
         logging.debug(str(self.subscripciones))
-        time.sleep(20)
+        # time.sleep(20)
         cliente_paho.loop_start()
+        self.msg = "00"
 
     def SetDestino(self,dest):
         self.destino=dest
@@ -80,3 +79,6 @@ class clients (object):
         self.DetSalas()
         for i in self.lista_salas:
             self.subscripciones.append((MQTT_SALAS+MQTT_GRUPO+i,MQTT_QOS))
+
+#OAGM: objeto comandos. Recibe la cliente mqtt como parametro (paho.Client)
+comandos = ClientCommands(cliente_paho)
