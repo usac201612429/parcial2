@@ -3,6 +3,7 @@ import time
 import threading 
 import logging
 import sys
+import os
 
 class ClientCommands:
     def __init__(self, cliente_paho):
@@ -30,7 +31,7 @@ class ClientCommands:
                 logging.critical('Conexión finalizada, el servidor no responde')    #OAGM: se indica que el servidor no respondio
                 self.cliente_paho.loop_stop()                                       #OAGM: se finalizan algunos procesos
                 self.cliente_paho.disconnect()
-                sys.exit()                                                          #OAGM: y se sale del programa               
+                os.kill(os.getpid(), 9)                                             #OAGM: y se sale del programa               
                 
                 
 
