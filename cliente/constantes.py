@@ -19,6 +19,7 @@ MQTT_COMANDOS = 'comandos/'
 MQTT_USUARIOS = 'usuarios/'
 MQTT_SALAS = 'salas/'
 MQTT_GRUPO = '01/'
+MQTT_AUDIO ='audio/'
 
 #General
 

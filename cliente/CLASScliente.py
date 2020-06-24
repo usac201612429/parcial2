@@ -4,34 +4,12 @@ import os
 import paho.mqtt.client as paho
 import logging
 import time
+import threading
 
 FORMATO = '[%(levelname)s] %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=FORMATO)
 
 
-def on_publish(client,userdata,mid):
-    info='Mensaje enviado'
-    logging.debug(info)
-
-def on_message(client,userdata,msg):
-    topic=str(msg.topic)
-    ltopic=topic.split('/')
-    mensaje=msg.payload.decode()
-    usuario = mensaje[:9]
-    mensaje = mensaje[9:]
-    if ltopic[0]=='usuarios':
-        logging.info("[MENSAJE NUEVO DEL USUARIO "+usuario+"]\n\t"+mensaje+'\n')
-    elif ltopic[0]=='salas':
-        logging.info("[MENSAJE NUEVO DEL USUARIO "+usuario+' EN LA SALA '+ltopic[2]+"]\n\t"+mensaje+'\n')
-
-    
-
-
-cliente_paho = paho.Client(clean_session=True)
-cliente_paho.on_publish = on_publish
-cliente_paho.on_message = on_message
-cliente_paho.username_pw_set(MQTT_USER,MQTT_PASS)
-cliente_paho.connect(host=MQTT_HOST,port=MQTT_PORT)
 
 
 
@@ -39,11 +17,21 @@ cliente_paho.connect(host=MQTT_HOST,port=MQTT_PORT)
 class clients (object):
     def __init__(self):
         self.usuario = self.DetID()
-        self.subscripciones = [(MQTT_COMANDOS+MQTT_GRUPO+self.usuario,MQTT_QOS),(MQTT_USUARIOS+MQTT_GRUPO+self.usuario,MQTT_QOS)]
+        self.subscripciones = [(MQTT_COMANDOS+MQTT_GRUPO+self.usuario,MQTT_QOS),(MQTT_USUARIOS+MQTT_GRUPO+self.usuario,MQTT_QOS),(MQTT_AUDIO+MQTT_GRUPO+self.usuario,MQTT_QOS)]
         self.SubSalas()
-        cliente_paho.subscribe(self.subscripciones)
-        cliente_paho.loop_start()
 
+
+        self.cliente_paho = paho.Client(clean_session=True)
+        self.cliente_paho.on_publish = self.on_publish
+        self.cliente_paho.on_message = self.on_message
+        self.cliente_paho.username_pw_set(MQTT_USER,MQTT_PASS)
+        self.cliente_paho.connect(host=MQTT_HOST,port=MQTT_PORT)
+        self.cliente_paho.subscribe(self.subscripciones)
+        self.cliente_paho.loop_start()
+
+        
+
+        
     def SetDestino(self,dest):
         self.destino=dest
 
@@ -55,7 +43,7 @@ class clients (object):
         return self.destino
 
     def EnviarTexto(self,msg):
-        cliente_paho.publish(self.destino,self.usuario+msg,qos=0,retain=False)
+        self.cliente_paho.publish(self.destino,msg,qos=0,retain=False)
         
     def GetUsuario(self):
         return self.usuario
@@ -88,3 +76,32 @@ class clients (object):
         self.DetSalas()
         for i in self.lista_salas:
             self.subscripciones.append((MQTT_SALAS+MQTT_GRUPO+i,MQTT_QOS))
+
+
+    def on_publish(self,client,userdata,mid):
+        info='Mensaje enviado'
+        logging.debug(info)
+
+    def on_message(self,client,userdata,msg):
+        topic=str(msg.topic)
+        ltopic=topic.split('/')
+        if ltopic[0]=='usuarios':
+            print('\n\n')
+            logging.info("[MENSAJE NUEVO DE USUARIO]\n\t"+msg.payload.decode()+'\n')
+        elif ltopic[0]=='salas':
+            print('\n\n')
+            logging.info("[MENSAJE NUEVO USUARIO EN LA SALA " +ltopic[2]+"]\n\t"+msg.payload.decode()+'\n')
+        elif ltopic[0]=='audio':
+            print('\n\n')
+            logging.info("[MENSAJE DE AUDIO NUEVO]")
+            archivo_nombre=str(time.time())+'.wav'
+            brcibidos = msg.payload
+            self.hilo = threading.Thread(name='Reproductor de audio recibido',target=self.Reproducir_Audio, args=((archivo_nombre,brcibidos)),daemon=False)
+            self.hilo.start()
+
+
+    def Reproducir_Audio(self,nombre,bytes_recibidos):
+        audio = open(nombre,'wb')
+        audio.write(bytes_recibidos)
+        audio.close()
+        os.system('aplay '+nombre)

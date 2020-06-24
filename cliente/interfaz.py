@@ -80,9 +80,11 @@ def menu_salir():
     while True:
         salida = input('Esta seguro que desea salir de la mensajeria? [Y]/n\n')
         if salida == '' or salida == ' ' or salida == 'Y' or salida =='y':
-            cliente_paho.loop_stop()
-            cliente_paho.disconnect()
-
+            cliente.cliente_paho.loop_stop()
+            cliente.cliente_paho.disconnect()
+            if cliente.hilo.isAlive():
+                cliente.hilo._stop()
+            logging.info('Terminando programa...')
             sys.exit()
         elif salida == 'n' or salida =='N':
             menu_principal()
@@ -99,7 +101,10 @@ def menu_en_usuario(tipo):
         id_dest = input('Indique el usuario al que desea enviar el mensaje:\n')    
         if id_dest.isdigit() :
             if len(id_dest)==9:
-                cliente.SetDestino('usuarios/01/'+id_dest)
+                if tipo=='texto':
+                    cliente.SetDestino(MQTT_USUARIOS+MQTT_GRUPO+id_dest)
+                else:
+                    cliente.SetDestino(MQTT_AUDIO+MQTT_GRUPO+id_dest)
                 break
             else:
                 os.system('clear')
@@ -118,7 +123,6 @@ def menu_en_usuario(tipo):
 def menu_en_sala(tipo):
     os.system('clear')
     logging.info('Envio de mensaje de '+tipo+'\n')
-    salas =[]
     salas = cliente.GetSalas()
     mensaje = 'Usted se encuentra dentro de las siguientes salas:'
     for i in salas:
@@ -127,7 +131,11 @@ def menu_en_sala(tipo):
     while True:
         destino = input('Indique la sala a la que desa enviar el mensaje: \n')
         if destino in salas:
-            cliente.SetDestino('salas/01/'+destino)
+            if tipo=='texto':
+                cliente.SetDestino(MQTT_SALAS+MQTT_GRUPO+destino)
+            else:
+                cliente.SetDestino(MQTT_AUDIO+MQTT_GRUPO+destino)
+            
             break
         else:
             os.system('clear')
@@ -176,3 +184,7 @@ def envio_audio():
 
 def grabacion(duracion):
     os.system('arecord -d '+duracion+' -f U8 -r 8000 audio.wav')
+    audio = open('audio.wav','rb')
+    b_audio = audio.read()
+    audio.close()
+    cliente.EnviarTexto(b_audio)
