@@ -22,6 +22,6 @@ MQTT_GRUPO = '01/'
 MQTT_AUDIO ='audio/'
 
 #General
-
+ALIVE_PERIOD = 2
 
 

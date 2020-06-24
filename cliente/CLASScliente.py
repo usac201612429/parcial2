@@ -1,4 +1,5 @@
 from constantes import *
+from ClientComands import *
 
 import os
 import paho.mqtt.client as paho
@@ -10,7 +11,8 @@ FORMATO = '[%(levelname)s] %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=FORMATO)
 
 
-
+''' def on_publish(client,userdata,mid):
+    comandos.publicar() '''
 
 
 #FPRTH Se crea la clase que manejara al cliente
@@ -98,6 +100,8 @@ class clients (object):
             brcibidos = msg.payload
             self.hilo = threading.Thread(name='Reproductor de audio recibido',target=self.Reproducir_Audio, args=((archivo_nombre,brcibidos)),daemon=False)
             self.hilo.start()
+        elif ltopic[0] == 'comandos':
+            comandos.verificarMensajes(msg.payload, msg.topic)
 
 
     def Reproducir_Audio(self,nombre,bytes_recibidos):
@@ -105,3 +109,9 @@ class clients (object):
         audio.write(bytes_recibidos)
         audio.close()
         os.system('aplay '+nombre)
+
+
+
+
+''' #OAGM: objeto comandos. Recibe la cliente mqtt como parametro (paho.Client)
+comandos = ClientCommands(cliente_paho) '''
