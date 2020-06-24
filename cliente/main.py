@@ -8,22 +8,22 @@ import paho.mqtt.client as paho
 '''FPRTH Configuracion del cliente MQTT'''
 
 
+
 #FPRTH definiendo las funciones de on_connect y on_publish
-def on_connect(client,userdata,mid):
-    info = 'Conexion del broker MQTT exitosa.\n\n'
-    logging.info(info)
-    time.sleep(2)
-    menu_inicio()
+try:
 
-def on_publish(client,userdata,mid):
-    info='Mensaje enviado'
-    logging.debug(info)
+    os.system('clear')
+    logging.info('Bienvenido a la mensajeria instantanea del grupo 1')
+    logging.info('Se ha loggeado con el siguiente usuario: ' +cliente.GetUsuario())
+    a=input('\nPresione "Enter" para continuar...')
 
-#FPRTH Configuraciones
-cliente_paho = paho.Client(clean_session=True)
-cliente_paho.on_connect = on_connect
-cliente_paho.on_publish = on_publish
-cliente_paho.username_pw_set(MQTT_USER,MQTT_PASS)
-cliente_paho.connect(host=MQTT_HOST,port=MQTT_PORT)
-
-menu_inicio()
+    menu_principal()
+except KeyboardInterrupt:
+    cliente.cliente_paho.loop_stop()
+    cliente.cliente_paho.disconnect()
+    if cliente.hilo.isAlive():
+        cliente.hilo._stop()
+    logging.info('Terminando programa...')
+    
+finally:
+    sys.exit()
