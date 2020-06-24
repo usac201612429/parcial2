@@ -78,6 +78,7 @@ class clients (object):
         self.DetSalas()
         for i in self.lista_salas:
             self.subscripciones.append((MQTT_SALAS+MQTT_GRUPO+i,MQTT_QOS))
+            self.subscripciones.append((MQTT_AUDIO+MQTT_GRUPO+i,MQTT_QOS))
 
 
     def on_publish(self,client,userdata,mid):
