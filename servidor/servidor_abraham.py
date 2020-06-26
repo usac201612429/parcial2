@@ -18,7 +18,7 @@ try:
     while True:
         #print("Hola mundo 2")
         time.sleep(9)
-        #servidor1.publicar("01S01",'hola sala 01')
+        #servidor1.publicar("comandos/01",'hola sala 01')
         
 except KeyboardInterrupt:
     if comandos.hiloFindCommands.isAlive():
